@@ -1,0 +1,125 @@
+#!/usr/bin/python
+
+import urllib
+from os import path
+from time import sleep
+from random import uniform
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+#from pyvirtualdisplay import Display
+
+#display = Display(visible=0, size=(800, 600))
+#display.start()
+
+def wait_between(a,b):
+	rand=uniform(a, b) 
+	sleep(rand)
+
+
+driver = webdriver.Firefox()
+driver.get("https://www.noip.com/confirm-host?n=eoEp8zill6qpfwLklE1")
+
+# press the No Thanks Button
+driver.find_element_by_xpath( "//a[@href='https://www.noip.com/confirm-host?n=eoEp8zill6qpfwLklE1']").click()
+
+wait_between(5.0, 7.5)
+
+assert "Register your Domain with No-IP an ICANN Accredited Registrar" in driver.title
+
+wait_between(2.0, 2.5)
+
+# move the driver to the first iFrame
+driver.switch_to_frame(driver.find_elements_by_tag_name("iframe")[0])
+
+# *************  locate CheckBox  **************
+CheckBox = WebDriverWait(driver, 10).until(
+	EC.presence_of_element_located((By.ID ,"recaptcha-anchor"))
+	)
+
+# *************  click CheckBox  ***************
+wait_between(0.5, 0.7)
+# making click on captcha CheckBox
+CheckBox.click()
+
+#***************** back to main window *********************************
+driver.switch_to_default_content()
+
+wait_between(2.0, 2.5)
+
+# ******** switch to the second (or third) iframe by tag name ************
+driver.switch_to_frame(driver.find_elements_by_tag_name("iframe")[1])
+
+# *************  locate AudioButton  **************
+AudioButton = WebDriverWait(driver, 20).until(
+	EC.presence_of_element_located((By.ID, "recaptcha-audio-button"))
+	)
+
+wait_between(0.5, 0.7)
+
+try:
+	AudioButton.click()
+	passed = False
+except:
+	passed = True
+
+if not passed:
+	wait_between(2.0, 2.5)
+
+	# *************  wait for Audio file  **************
+	WebDriverWait(driver, 20).until(
+		EC.presence_of_element_located((By.CSS_SELECTOR, "a[class='rc-audiochallenge-tdownload-link']"))
+		)
+
+	wait_between(0.5, 0.7)
+
+	downloadDiv = driver.find_element_by_class_name('rc-audiochallenge-tdownload-link')
+	urllib.urlretrieve (downloadDiv.get_attribute('href'), "/var/www/html/audio.mp3")
+
+	# *************  upload Audio file  **************
+	response = urllib.urlopen("http://ct1.ofoct.com/upload_from_url.php?url=https%3A%2F%2Ftermanager.ddns.net%2Faudio.mp3&input_format=mp3,wav,wma,ogg").read()
+
+	remoteFileName = response.split("|")[2]
+
+	# *************  convert Audio file  **************
+	urllib.urlopen("http://ct1.ofoct.com/convert-file_v2.php?cid=audio2txt&output=txt&tmpfpath=" + remoteFileName + "&row=file1&sourcename=audiomp3&sdk=baidu&rowid=file1")
+
+	# *************  download converted Audio file  **************
+	speech = urllib.urlopen("http://ct1.ofoct.com/get-file.php?type=get&genfpath=/tmp/" + remoteFileName + ".txt").read().replace(",", "")
+
+	# *************  submit converted Audio file  **************
+	text_area = driver.find_element_by_id('audio-response')
+	text_area.send_keys(speech)
+
+	wait_between(0.5, 0.7) 
+
+	# *************  Submit the reCaptcha  **************
+	submit_button = driver.find_element_by_id('recaptcha-verify-button')
+	submit_button.click()
+
+	wait_between(0.5, 0.7)
+
+#***************** back to main window *********************************
+driver.switch_to_default_content()
+	 
+wait_between(2.0, 2.5)
+
+# *************  Confirm the domain  **************
+confirm_button = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+
+try:
+	confirm_button.click()
+except:
+	print "Breaking reCaptcha failed!"
+	driver.close()
+	exit(1)
+
+wait_between(5.5, 6.7) 
+
+driver.close()
+
+print "Breaking reCaptcha succeded!"
+
+exit(0)

@@ -1,0 +1,12 @@
+[Unit]
+Description=Framebuffer user interface
+After=getty@tty1.service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/start_gui
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+phy=`rfkill list | grep "Soft blocked: yes" | wc -l`
+wlan=`/sbin/ifconfig wlan0 | grep inet | wc -l`
+
+if [ $phy -ne 0 ]; then
+  exit 2
+elif [ $wlan -ne 0 ]; then
+  exit 1
+else
+  exit 0
+fi

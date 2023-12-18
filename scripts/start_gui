@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# FRAMEBUFFER=/dev/fb1 startx tempmanager -- -nocursor
+
+tempmanager -platform linuxfb:fb=/dev/fb1 -plugin Tslib
+
+interrupt
