@@ -1,0 +1,8 @@
+To enable ssh
+create an empty ssh file in the boot partition
+
+To create a default user
+https://forums.raspberrypi.com/viewtopic.php?t=351948
+
+To install LCD drivers
+http://www.lcdwiki.com/3.5inch_RPi_Display
